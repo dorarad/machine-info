@@ -51,6 +51,7 @@ class SysInfo
   end
 
   def cpu; lusers.inject(0) { |tot, (u, h)| tot + h[:cpu] }; end
+  def maxcpu; [cpu, load1 * 100].max ; end
 ## CDM 2007: Using free memory is ineffective because modern linux OSes appear
 ## to just not free up no longer used memory until someone else needs it....
 ## && memused < (memtot * 0.9)  ;;  && memused < (memtot * 0.975)
@@ -59,9 +60,9 @@ class SysInfo
     require 'time'
     return (Time.now - Time.parse(date.to_s)) > DOWN_THRESH
   end
-  def free?; !down? && cpu < 25.0 && swapused < (swaptot * 0.5) && (pswapin + pswapout) < 20.0 && ! (name == "jamie") && ! (name == "jacob") && ! (name == "nlp") && ! (name == "jay"); end
-  def freeish?; !down? && !free? && cpu < 160.0 && swapused < (swaptot * 0.7) && (pswapin + pswapout) < 150.0; end
-  def busy?; !down? && !free? && !freeish? && load5 < (cpunum + 1.0) && swapused < (swaptot * 0.925) && (pswapin + pswapout) < 600.0; end
+  def free?; !down? && maxcpu < 25.0 && swapused < (swaptot * 0.5) && (pswapin + pswapout) < 20.0 && ! (name == "jamie") && ! (name == "jacob") && ! (name == "nlp") && ! (name == "jay") && ! (name == "jerome"); end
+  def freeish?; !down? && !free? && maxcpu < (cores - 1) * 65.0 && swapused < (swaptot * 0.7) && (pswapin + pswapout) < 150.0; end
+  def busy?; !down? && !free? && !freeish? && (maxcpu / 100.0) < (cores + 1.0) && swapused < (swaptot * 0.925) && (pswapin + pswapout) < 600.0; end
   def overloaded?; !down? && !free? && !freeish? && !busy?; end
   def server?; server != false; end
   def qualitative_load
@@ -165,11 +166,6 @@ nfs, nfs_old =
     %w(nfs nfs.old)
   end.map { |n| f[n].split(/\n/)[3].split(/\s+/)[3 ... 24].map { |x| x.to_i.min0 } }
 
-memfree = f["meminfo"].nil? ? 0: f["meminfo"].value_of(/MemFree:\s+(\d+) kB/).to_i
-membuffers = f["meminfo"].nil? ? 0: f["meminfo"].value_of(/Buffers:\s+(\d+) kB/).to_i
-memcached = f["meminfo"].nil? ? 0: f["meminfo"].value_of(/Cached:\s+(\d+) kB/).to_i
-
-
 fsystems = {}
 if server
   fsbusy = f["fsbusy"].split(/\n/) # kinda lame since we just joined it, but...
@@ -187,6 +183,11 @@ if server
   end
 end
 
+memfree = f["meminfo"].nil? ? 0: f["meminfo"].value_of(/MemFree:\s+(\d+) kB/).to_i
+membuffers = f["meminfo"].nil? ? 0: f["meminfo"].value_of(/Buffers:\s+(\d+) kB/).to_i
+memcached = f["meminfo"].nil? ? 0: f["meminfo"].value_of(/Cached:\s+(\d+) kB/).to_i
+coresperchip = f["cpuinfo"].grep(/core id\s*:\s*\d/).uniq.length
+chips = f["cpuinfo"].grep(/physical id\s*:\s*\d/).uniq.length
 
 status = {
   :memtot => f["meminfo"].nil? ? 0: f["meminfo"].value_of(/MemTotal:\s+(\d+) kB/).to_i / 1024,
@@ -198,9 +199,12 @@ status = {
   :arch => arch,
 
   :cputype => f["cpuinfo"].value_of(/model name\s*:\s*(.*)$/),
+  # cpunum is number of execution contexts: counts 2 for each hyperthreaded core
   :cpunum => f["cpuinfo"].grep(/processor\s*:\s*\d/).length,
+  :chips => chips,
+  :cores => coresperchip * chips,
 
-  :uptime => f["uptime"].value_of(/^(\d+)/).to_i,
+  :uptime => (f["uptime"].nil? ? "0" : f["uptime"].value_of(/^(\d+)/)).to_i,
   :load1 => load1,
   :load5 => load5,
   :load15 => load15,
