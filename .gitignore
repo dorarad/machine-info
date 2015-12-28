@@ -1,2 +1,8 @@
 # Don't include the data files
 *.yaml
+
+# Old versions before using git
+attic
+
+# Old error output from cron
+old-cron-output

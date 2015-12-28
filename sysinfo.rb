@@ -47,7 +47,7 @@ class SysInfo
     @name = name
     @hash = hash
     @hash[:memused] = @hash[:memtot] - @hash[:memfree]
-## CDM 2015: Sometimes swapfree is bigger than swaptot. I don't understand why, but then say that used is zero
+    ## CDM 2015: Sometimes swapfree is bigger than swaptot. I don't understand why, but then say that used is zero. Known CentOS bug.
     swapused = @hash[:swaptot] - @hash[:swapfree]
     if swapused < 0 then swapused = 0 end
     @hash[:swapused] = swapused
@@ -159,7 +159,7 @@ load15 = $3.to_f
 kernver, arch = f["uname-rp"].split
 date = Time.parse f["date"]
 
-## parse weird nfs format---pull out v3 numbers (3rd line columns 3
+## parse weird nfs format---pull out v3 numbers (line starting with "proc3", columns 3
 ## through 24). sadly no labels but you can correlate the numbers with
 ## the output of nfsstat -cn.
 nfs, nfs_old =
@@ -168,7 +168,6 @@ nfs, nfs_old =
   else
     %w(nfs nfs.old)
   end.map { |n| f[n].split(/\n/).find { |e| /^proc3/ =~ e }.split(/\s+/)[3 ... 24].map { |x| x.to_i.min0 } }
-  # end.map { |n| f[n].split(/\n/)[3].split(/\s+/)[3 ... 24].map { |x| x.to_i.min0 } }
 
 fsystems = {}
 if server
@@ -251,7 +250,6 @@ jobs.each do |l|
   lusers[u][:mem] += mem
   lusers[u][:time] = [lusers[u][:time], time].max
   ## deal with people with absolute path
-  # cmd = cmd.gsub(/\/juic[a-z]+\/u\d\d\/u\/nlp\/packages/, "/u/nlp/packages")
   cmd = cmd.gsub(/^\/juic[a-z]+\/(?:u|scr)\d+\/(u|scr)\//, '/\1/')
   if cmd =~ /^(?:\/bin)?\/?bash$/
     cmd = args[0]
@@ -274,7 +272,6 @@ jobs.each do |l|
       ## otherwise just look for something with a . in it or something after a -jar
       args.each_with_index do |a, i|
         a = a.gsub(/^\/juic[a-z]+\/(?:u|scr)\d+\/(u|scr)\//, '/\1/')
-        # a = a.gsub(/\/juic[a-z]+\/u\d\d\/u\/nlp\/packages/, "/u/nlp/packages")
         if a =~ /scala\.tools\.nsc\.MainGenericRunner/
           name = a
           # but keep on looking for a scala class
@@ -299,7 +296,6 @@ jobs.each do |l|
       ## otherwise just look for something with a . in it or something after a -jar
       args.each_with_index do |a, i|
         a = a.gsub(/^\/juic[a-z]+\/(?:u|scr)\d+\/(u|scr)\//, '/\1/')
-        # a = a.gsub(/\/juic[a-z]+\/u\d\d\/u\/nlp\/packages/, "/u/nlp/packages")
         if a =~ /scala\.tools\.nsc\.MainGenericRunner/
           name = a
           # but keep on looking for a scala class
@@ -320,7 +316,6 @@ jobs.each do |l|
       ## isn't proceeded by a -I
       args.each_with_index do |a, i|
         a = a.gsub(/^\/juic[a-z]+\/(?:u|scr)\d+\/(u|scr)\//, '/\1/')
-        # a = a.gsub(/\/juic[a-z]+\/u\d\d\/u\/nlp\/packages/, "/u/nlp/packages")
         if a =~ /^[^-]/ &&
           (args.length == 0 || args[i - 1] !~ /^-I$/)
           name = a
