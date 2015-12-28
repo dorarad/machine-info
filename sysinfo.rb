@@ -39,7 +39,7 @@ end
 
 class SysInfo
   attr_reader :name
-  
+
   TRIVIAL_CPU_THRESH = 2.0
   TRIVIAL_MEM_THRESH = 4.0
 
@@ -111,12 +111,12 @@ class Array
 end
 
 ###### EVERYTHING BELOW HERE IGNORED IF LOADED AS A LIBRARY #######
-if __FILE__ == $0 
+if __FILE__ == $0
 
 require 'yaml'
 require 'time'
 
-FILES = %w(meminfo loadavg cpuinfo uptime uname-rp ps-axuwww date vmstat vmstat.old)
+FILES = %w(meminfo loadavg cpuinfo uptime uname-rp ps-axuwww date vmstat vmstat.old nvidia-smi)
 CLIENT_FILES = %w(nfs nfs.old)
 SERVER_FILES = %w(nfsd nfsd.old fsbusy)
 BASE_DIR = "/u/linux/status/"
@@ -133,9 +133,9 @@ dir = File.join BASE_DIR, machine_name
 File.exists?(dir) or raise "#{dir} does not exist"
 File.directory?(dir) or raise "#{dir} is not a directory"
 
-f = (FILES + (server ? SERVER_FILES : CLIENT_FILES)).map do |fn| 
+f = (FILES + (server ? SERVER_FILES : CLIENT_FILES)).map do |fn|
   tries = RETRIES
-  data = 
+  data =
     begin
       File.readlines(File.join(dir, fn)).join
     rescue Errno::ENOENT => e
@@ -212,13 +212,18 @@ status = {
   :load5 => load5,
   :load15 => load15,
 
-  :pswapin => ((f["vmstat"].nil? ? 0.0 : f["vmstat"].value_of(/pswpin\s+(\d+)/)).to_f - 
+  :pswapin => ((f["vmstat"].nil? ? 0.0 : f["vmstat"].value_of(/pswpin\s+(\d+)/)).to_f -
     (f["vmstat.old"].nil? ? 0.0 : f["vmstat.old"].value_of(/pswpin\s+(\d+)/)).to_f).min0 / DELTA.to_f,
 
-  :pswapout => ((f["vmstat"].nil? ? 0.0 : f["vmstat"].value_of(/pswpout\s+(\d+)/)).to_f - 
+  :pswapout => ((f["vmstat"].nil? ? 0.0 : f["vmstat"].value_of(/pswpout\s+(\d+)/)).to_f -
     (f["vmstat.old"].nil? ? 0.0 : f["vmstat.old"].value_of(/pswpout\s+(\d+)/)).to_f).min0 / DELTA.to_f,
 
   :date => date,
+
+  # high-level GPU info -- device-wide utilization
+  :gpus => f["nvidia-smi"].scan(/(\d+)MiB \/ (\d+)MiB[ |]*(\d+)%/).map { |arr|
+      {:memused => arr[0].to_i, :memtot => arr[1].to_i, :utilization => arr[2].to_i}
+  },
 
   :nfs => {
     :total => (nfs.sum - nfs_old.sum).to_f.min0 / DELTA.to_f,
@@ -264,7 +269,7 @@ jobs.each do |l|
         name = $1
       elsif cmd =~ /jdk1.\d-current-x86_64\/bin\/(java)/
         name = $1
-      else 
+      else
         name = cmd
       end
       origname = name
