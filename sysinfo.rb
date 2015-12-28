@@ -116,7 +116,7 @@ if __FILE__ == $0
 require 'yaml'
 require 'time'
 
-FILES = %w(meminfo loadavg cpuinfo uptime uname-rp ps-axuwww date vmstat vmstat.old nvidia-smi)
+FILES = %w(meminfo loadavg cpuinfo uptime uname-rp ps-axuwww date vmstat vmstat.old)
 CLIENT_FILES = %w(nfs nfs.old)
 SERVER_FILES = %w(nfsd nfsd.old fsbusy)
 BASE_DIR = "/u/linux/status/"
@@ -150,6 +150,14 @@ f = (FILES + (server ? SERVER_FILES : CLIENT_FILES)).map do |fn|
     end
   [fn, data]
 end.to_h
+
+# Read the nvidia-smi file separately; this doesn't exist on some systems which
+# didn't get the record-system-status update..
+begin
+  f["nvidia-smi"] = File.readlines(File.join(dir, "nvidia-smi")).join
+rescue
+  f["nvidia-smi"] = nil
+end
 
 f["loadavg"] =~ /^(\S+) (\S+) (\S+)/
 load1 = $1.to_f
@@ -192,6 +200,15 @@ memcached = f["meminfo"].nil? ? 0: f["meminfo"].value_of(/Cached:\s+(\d+) kB/).t
 coresperchip = f["cpuinfo"].grep(/core id\s*:\s*\d/).uniq.length
 chips = f["cpuinfo"].grep(/physical id\s*:\s*\d/).uniq.length
 
+# Prepare basic high-level GPU information
+gpus = []
+if not f["nvidia-smi"].nil?
+  gpus = f["nvidia-smi"].scan(/(\d+)MiB \/ (\d+)MiB[ |]*(\d+)%/).map { |data|
+    data = data.map {|el| el.to_i}
+    Hash[[:memused, :memtot, :utilization], data]
+  }
+end
+
 status = {
   :memtot => f["meminfo"].nil? ? 0: f["meminfo"].value_of(/MemTotal:\s+(\d+) kB/).to_i / 1024,
   :memfree => (memfree + membuffers + memcached) / 1024,
@@ -220,10 +237,7 @@ status = {
 
   :date => date,
 
-  # high-level GPU info -- device-wide utilization
-  :gpus => f["nvidia-smi"].scan(/(\d+)MiB \/ (\d+)MiB[ |]*(\d+)%/).map { |arr|
-      {:memused => arr[0].to_i, :memtot => arr[1].to_i, :utilization => arr[2].to_i}
-  },
+  :gpus => gpus,
 
   :nfs => {
     :total => (nfs.sum - nfs_old.sum).to_f.min0 / DELTA.to_f,
