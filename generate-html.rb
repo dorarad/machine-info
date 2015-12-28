@@ -116,6 +116,7 @@ EOS
     [head, body, tail].join
   end
 
+# This method isn't used and would need rewriting
   def spectab_html
     <<EOS
 <table cellpadding="2" cellspacing="0">
@@ -129,25 +130,12 @@ EOS
   end
 
   def spectab_short_html
-    ## don't know if there's a way to determine whether we're using
-    ## hyperthreading or not, but chris wants a note in here about it,
-    ## so...
     ## todo: replace this by more cpuinfo decoding -- either flags contains "ht" or siblings != cpu cores in cpuinfo
     cpudesc = 
-      if (cpunum % 32) == 0 && cputype =~ /\bE5-26[0-9]+\b/i
-        "#{cpunum / 16} x #{cputype} (#{cpunum / 2} cores, #{cpunum} w/h-threading)"
-      elsif (cpunum % 16) == 0 && cputype =~ /\bE5620\b/i
-        "#{cpunum / 8} x #{cputype} (#{cpunum / 2} cores, #{cpunum} w/h-threading)"
-      elsif (cpunum % 8) == 0 && cputype =~ /\bL5530\b/i
-        "#{cpunum / 4} x #{cputype} (#{cpunum / 2} cores, #{cpunum} w/h-threading)"
-      elsif (cpunum % 8) == 0 && cputype =~ /\bxeon\b/i
-        "#{cpunum / 4} x #{cputype} (#{cpunum} cores)"
-      elsif (cpunum % 2) == 0 && cputype =~ /\bxeon\b/i
-        "#{cpunum / 2} x #{cputype} (#{cpunum / 2} cores, #{cpunum} w/h-threading)"
-      elsif (cpunum % 2) == 0 && cputype =~ /\bopteron\b/i
-        "#{cpunum / 2} x #{cputype} (#{cpunum} cores)"
-      else
-        "#{cpunum} x #{cputype}"
+      if (cpunum == cores)
+        "#{chips} x #{cputype} (#{cpunum} cores in total)"
+      else 
+        "#{chips} x #{cputype} (#{cores} cores in total, #{cpunum} with hyperthreading)"
       end
     cpudesc = cpudesc.gsub(/\((?:tm|TM|R)\)/, "")
     '<font size="-2">' +
@@ -280,7 +268,7 @@ puts "<font color='red'>Claimed</font>: " + claims.map { |m, rs| "#{m.to_aref} (
 # fsload = servers.map { |name| info[name].qualitative_load }.listify
 fsload = servers.map { |name| "#{name.to_aref}: #{info[name].colored_qualitative_load}#{info[name].fsystem_html}"}.listify + "."
 
-culprits = h[:info].select { |name, m| m.nfs[:total] > BLAME_NFS_THRESH }.sort_by { |name, m| -m.nfs[:total] }
+culprits = h[:info].select { |name, m| m.nfs[:total] > BLAME_NFS_THRESH && ! m.server? }.sort_by { |name, m| -m.nfs[:total] }
 if ! culprits.empty?
   culpritsdesc = culprits.map do |name, m|
     "#{name.to_aref} making #{m.nfs[:total].nice 1} nfs calls/sec, " + 

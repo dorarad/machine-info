@@ -78,8 +78,8 @@ lusers.each do |u, h|
   end
 end
 
-impressive = lusers.keys.select { |u| (lusers[u][:total_cpu] || 0) >= IMPRESSIVE_THRESH }
-# unimpressive = lusers.keys.select { |u| (lusers[u][:total_cpu] || 200 < UNIMPRESSIVE_THRESH }
+impressive = lusers.keys.select{ |u| (lusers[u][:total_cpu] || 0) >= IMPRESSIVE_THRESH }.sort_by{ |u| -lusers[u][:total_cpu] }
+# unimpressive = lusers.keys.select { |u| (lusers[u][:total_cpu] < UNIMPRESSIVE_THRESH) }
 down = machines.select { |m| m.down? }.map { |m| m.name }
 busy = machines.select { |m| !m.server? && m.busy? }.map { |m| m.name }
 overloaded = machines.select { |m| !m.server? && m.overloaded? }.map { |m| m.name }

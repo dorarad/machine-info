@@ -1,0 +1,2 @@
+# Don't include the data files
+*.yaml

@@ -47,7 +47,10 @@ class SysInfo
     @name = name
     @hash = hash
     @hash[:memused] = @hash[:memtot] - @hash[:memfree]
-    @hash[:swapused] = @hash[:swaptot] - @hash[:swapfree]
+## CDM 2015: Sometimes swapfree is bigger than swaptot. I don't understand why, but then say that used is zero
+    swapused = @hash[:swaptot] - @hash[:swapfree]
+    if swapused < 0 then swapused = 0 end
+    @hash[:swapused] = swapused
   end
 
   def cpu; lusers.inject(0) { |tot, (u, h)| tot + h[:cpu] }; end
@@ -164,7 +167,8 @@ nfs, nfs_old =
     %w(nfsd nfsd.old)
   else
     %w(nfs nfs.old)
-  end.map { |n| f[n].split(/\n/)[3].split(/\s+/)[3 ... 24].map { |x| x.to_i.min0 } }
+  end.map { |n| f[n].split(/\n/).find { |e| /^proc3/ =~ e }.split(/\s+/)[3 ... 24].map { |x| x.to_i.min0 } }
+  # end.map { |n| f[n].split(/\n/)[3].split(/\s+/)[3 ... 24].map { |x| x.to_i.min0 } }
 
 fsystems = {}
 if server
@@ -247,7 +251,8 @@ jobs.each do |l|
   lusers[u][:mem] += mem
   lusers[u][:time] = [lusers[u][:time], time].max
   ## deal with people with absolute path
-  cmd = cmd.gsub(/\/juic[a-z]+\/u\d\d\/u\/nlp\/packages/, "/u/nlp/packages")
+  # cmd = cmd.gsub(/\/juic[a-z]+\/u\d\d\/u\/nlp\/packages/, "/u/nlp/packages")
+  cmd = cmd.gsub(/^\/juic[a-z]+\/(?:u|scr)\d+\/(u|scr)\//, '/\1/')
   if cmd =~ /^(?:\/bin)?\/?bash$/
     cmd = args[0]
     args = args[1, args.length]
@@ -268,7 +273,8 @@ jobs.each do |l|
       ## try to treat scala specially
       ## otherwise just look for something with a . in it or something after a -jar
       args.each_with_index do |a, i|
-        a = a.gsub(/\/juic[a-z]+\/u\d\d\/u\/nlp\/packages/, "/u/nlp/packages")
+        a = a.gsub(/^\/juic[a-z]+\/(?:u|scr)\d+\/(u|scr)\//, '/\1/')
+        # a = a.gsub(/\/juic[a-z]+\/u\d\d\/u\/nlp\/packages/, "/u/nlp/packages")
         if a =~ /scala\.tools\.nsc\.MainGenericRunner/
           name = a
           # but keep on looking for a scala class
@@ -292,7 +298,8 @@ jobs.each do |l|
       ## try to treat scala specially
       ## otherwise just look for something with a . in it or something after a -jar
       args.each_with_index do |a, i|
-        a = a.gsub(/\/juic[a-z]+\/u\d\d\/u\/nlp\/packages/, "/u/nlp/packages")
+        a = a.gsub(/^\/juic[a-z]+\/(?:u|scr)\d+\/(u|scr)\//, '/\1/')
+        # a = a.gsub(/\/juic[a-z]+\/u\d\d\/u\/nlp\/packages/, "/u/nlp/packages")
         if a =~ /scala\.tools\.nsc\.MainGenericRunner/
           name = a
           # but keep on looking for a scala class
@@ -312,7 +319,8 @@ jobs.each do |l|
       ## look for the first thing that doesn't start with a - and
       ## isn't proceeded by a -I
       args.each_with_index do |a, i|
-        a = a.gsub(/\/juic[a-z]+\/u\d\d\/u\/nlp\/packages/, "/u/nlp/packages")
+        a = a.gsub(/^\/juic[a-z]+\/(?:u|scr)\d+\/(u|scr)\//, '/\1/')
+        # a = a.gsub(/\/juic[a-z]+\/u\d\d\/u\/nlp\/packages/, "/u/nlp/packages")
         if a =~ /^[^-]/ &&
           (args.length == 0 || args[i - 1] !~ /^-I$/)
           name = a
