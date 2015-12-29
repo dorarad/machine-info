@@ -33,7 +33,9 @@ IMPRESSIVE_THRESH = 500
 raise "expecting a sequence of machine names as arguments" if ARGV.empty?
 
 ## get machine info
-machines = ARGV.map { |name| SysInfo.new name, YAML::load_file(File.join(YAML_DIR, "#{name}.yaml")) }.sort_by { |m| m.name }
+machines = ARGV.flat_map { |names| names.split.map { |name|
+    SysInfo.new name, YAML.load_file(File.join(YAML_DIR, "#{name}.yaml"))
+}}.sort_by { |m| m.name }
 
 ## get user notes and claims
 lusers = {}

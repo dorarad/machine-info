@@ -131,10 +131,10 @@ EOS
 
   def spectab_short_html
     ## todo: replace this by more cpuinfo decoding -- either flags contains "ht" or siblings != cpu cores in cpuinfo
-    cpudesc = 
+    cpudesc =
       if (cpunum == cores)
         "#{chips} x #{cputype} (#{cpunum} cores in total)"
-      else 
+      else
         "#{chips} x #{cputype} (#{cores} cores in total, #{cpunum} with hyperthreading)"
       end
     cpudesc = cpudesc.gsub(/\((?:tm|TM|R)\)/, "")
@@ -172,7 +172,7 @@ class Array
   def listify last_sep = " and ", sep = ", "
     ret = ""
     each_with_index do |e, i|
-      ret += e.to_s + 
+      ret += e.to_s +
         case i
         when self.size - 1
           ""
@@ -199,8 +199,7 @@ class String
 end
 
 ## start here
-h = YAML.load $stdin
-h[:info] = h[:info].map { |name, hash| [name, SysInfo.new(name, hash)] }.to_h
+h = YAML.load STDIN.read
 
 impressive, down, busy, overloaded, free, freeish, claims, lusers, servers, info = h[:impressive], h[:down], h[:busy], h[:overloaded], h[:free], h[:freeish], h[:claims], h[:lusers], h[:servers], h[:info]
 
@@ -271,7 +270,7 @@ fsload = servers.map { |name| "#{name.to_aref}: #{info[name].colored_qualitative
 culprits = h[:info].select { |name, m| m.nfs[:total] > BLAME_NFS_THRESH && ! m.server? }.sort_by { |name, m| -m.nfs[:total] }
 if ! culprits.empty?
   culpritsdesc = culprits.map do |name, m|
-    "#{name.to_aref} making #{m.nfs[:total].nice 1} nfs calls/sec, " + 
+    "#{name.to_aref} making #{m.nfs[:total].nice 1} nfs calls/sec, " +
     if m.nontrivial_lusers.empty?
       "even though no one is really using the CPU - weird"
     else
@@ -283,7 +282,7 @@ end
 
 puts "<p><b>Fileserver load:</b> #{fsload}"
 if ! culprits.empty?
-  puts " [<a href=\"#culprits\">Culprits</a>]" 
+  puts " [<a href=\"#culprits\">Culprits</a>]"
 end
 puts "</p>"
 
@@ -292,14 +291,14 @@ puts "<p><b>Special machines</b> <i>(please avoid overloading!):</i> #{"jamie".t
 puts "<p><b>Impressive:</b> " + impressive.map { |u| "#{u} #{lusers[u].nil? ? "": lusers[u][:note].nil? ? "" : "<i>[#{lusers[u][:note]}]</i>"}#{lusers[u].nil? ? "": " (" + lusers[u][:total_cpu].to_s + " cpu)" }" }.listify + ".</p>" unless impressive.empty?
 
 # CDM Nov 2008: This script runs on juice as users pdm. This bit needs juicy mounted
-# if ! impressive.empty? 
+# if ! impressive.empty?
 #   people = `export JAVA_HOME=/u/nlp/packages/java/jdk1.6-current-i686 ; /u/nlp/packages/hadoop/hadoop-current/bin/hadoop job -list | sed '1,2d' | cut -f 4 | sort | uniq -c`
 #   people = `/u/nlp/machine-info/hadoop-info.sh`
 #   puts "<p>The hadoopers are: #{people}</p>"
 # end
 
 puts "<p><b>Documentation:</b> <a href=\"machine-info.shtml\">NLP computer help &amp; rules</a> &middot; <a href=\"machine-info.shtml\#machinespage\">machines page</a>.</p>"
-# <a href=\"https://cs.stanford.edu/wiki/nlp-cluster/\">PBS (jude* machines)</a> &middot; 
+# <a href=\"https://cs.stanford.edu/wiki/nlp-cluster/\">PBS (jude* machines)</a> &middot;
 
 puts "<h2>Machines</h2>"
 
@@ -330,7 +329,7 @@ end.each do |name, m|
 EOS
 end
 
-if ! culprits.empty? 
+if ! culprits.empty?
   puts <<EOS
 <h3><a name=\"culprits\">Fileserver load culprits</a></h3>
 <p>#{culpritsdesc.listify(", and <br> ", ",<br>")}.</p>
