@@ -197,15 +197,14 @@ end
 memfree = f["meminfo"].nil? ? 0: f["meminfo"].value_of(/MemFree:\s+(\d+) kB/).to_i
 membuffers = f["meminfo"].nil? ? 0: f["meminfo"].value_of(/Buffers:\s+(\d+) kB/).to_i
 memcached = f["meminfo"].nil? ? 0: f["meminfo"].value_of(/Cached:\s+(\d+) kB/).to_i
-coresperchip = f["cpuinfo"].grep(/core id\s*:\s*\d/).uniq.length
-chips = f["cpuinfo"].grep(/physical id\s*:\s*\d/).uniq.length
+coresperchip = f["cpuinfo"].lines.grep(/core id\s*:\s*\d/).uniq.length
+chips = f["cpuinfo"].lines.grep(/physical id\s*:\s*\d/).uniq.length
 
 # Prepare basic high-level GPU information
 gpus = []
 if not f["nvidia-smi"].nil?
   gpus = f["nvidia-smi"].scan(/(\d+)MiB \/ (\d+)MiB[ |]*(\d+)%/).map { |data|
-    {:memused => data[0].to_i, :memtot => data[1].to_i,
-     :utilization => data[2].to_i}
+    %i(memused memtot utilization).zip(data.map(&:to_i)).to_h
   }
 end
 
@@ -220,7 +219,7 @@ status = {
 
   :cputype => f["cpuinfo"].value_of(/model name\s*:\s*(.*)$/),
   # cpunum is number of execution contexts: counts 2 for each hyperthreaded core
-  :cpunum => f["cpuinfo"].grep(/processor\s*:\s*\d/).length,
+  :cpunum => f["cpuinfo"].lines.grep(/processor\s*:\s*\d/).length,
   :chips => chips,
   :cores => coresperchip * chips,
 
