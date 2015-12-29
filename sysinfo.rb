@@ -205,7 +205,8 @@ gpus = []
 if not f["nvidia-smi"].nil?
   gpus = f["nvidia-smi"].scan(/(\d+)MiB \/ (\d+)MiB[ |]*(\d+)%/).map { |data|
     data = data.map {|el| el.to_i}
-    Hash[[:memused, :memtot, :utilization], data]
+    {:memused => data[0].to_i, :memtot => data[1].to_i,
+     :utilization => data[2].to_i}
   }
 end
 
