@@ -34,7 +34,7 @@ EOS
   end
 
   def statustab_html
-  <<EOS
+    ret = <<EOS
 <table cellpadding="2" cellspacing="0" bgcolor="#cccccc">
 <tr><td align="right">load:</td> <td align="left">#{load1} #{load5} #{load15}</td>
     #{load5.to_bar 8.0, PROGRESS_CELLS, 'red'}</tr>
@@ -48,6 +48,23 @@ EOS
     #{([nfs[:total], NFS_CALLS_S_THRESH].min).to_bar NFS_CALLS_S_THRESH, PROGRESS_CELLS, 'yellow'}</tr>
 </table>
 EOS
+
+    if gpus
+      gpu_strs = gpus.each_with_index.map { |gpu, i|
+        <<EOS
+<tr><td align="right">gpu#{i} util:</td> <td align="left">#{gpu[:utilization]}%</td>
+    #{gpu[:utilization].to_bar 100, PROGRESS_CELLS, 'red'}</tr>
+<tr><td align="right">gpu#{i} mem:</td> <td align="left">#{gpu[:memused]} MiB (#{gpu[:memused].to_pct gpu[:memtot]}) used</td>
+    #{gpu[:memused].to_bar gpu[:memtot], PROGRESS_CELLS, 'blue'}</tr>
+EOS
+      }
+
+      ret += '<table style="margin-top: 10px;" cellpadding="2" cellspacing="0" bgcolor="#cccccc">'
+      ret += gpu_strs.join "\n"
+      ret += "</table>"
+    end
+
+    ret
   end
 
   def usertab_html luser_info
