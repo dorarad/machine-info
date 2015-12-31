@@ -294,7 +294,6 @@ if ! culprits.empty?
       "for which we might blame " + m.nontrivial_lusers.map { |name, u| "<b>#{name}</b> (#{'%.1f' % u[:cpu]}% cpu)" }.listify(" or ")
     end
   end
-  # fsload += " Load comes from " + culpritsdesc.listify(", and ") + "."
 end
 
 puts "<p><b>Fileserver load:</b> #{fsload}"
@@ -303,9 +302,9 @@ if ! culprits.empty?
 end
 puts "</p>"
 
-puts "<p><b>Special machines</b> <i>(please avoid overloading!):</i> #{"jamie".to_aref} &amp; #{"jacob".to_aref} <i>(remote access);</i> #{"nlp".to_aref} <i>(webserver, tomcat);</i> #{"jerome".to_aref} <i>(Jenkins CI);</i> #{"jaclyn".to_aref} <i>(mysql);</i> #{"jay".to_aref} <i>(tape backup).</i></p>"
+puts "<p><b>Special machines</b> <i>(not for heavy compute!):</i> #{"jamie".to_aref} &amp; #{"jacob".to_aref} <i>(remote access);</i> #{"nlp".to_aref} <i>(webserver, tomcat);</i> #{"jerome".to_aref} <i>(Jenkins CI);</i> #{"jack".to_aref} <i>(mysql);</i> #{"jay".to_aref} <i>(tape backup).</i></p>"
 
-puts "<p><b>Impressive:</b> " + impressive.map { |u| "#{u} #{lusers[u].nil? ? "": lusers[u][:note].nil? ? "" : "<i>[#{lusers[u][:note]}]</i>"}#{lusers[u].nil? ? "": " (" + lusers[u][:total_cpu].to_s + " cpu)" }" }.listify + ".</p>" unless impressive.empty?
+puts "<p><b>Impressive:</b> " + impressive.map { |u| "#{u} #{lusers[u].nil? ? "": lusers[u][:note].nil? ? "" : "<i>[#{lusers[u][:note]}]</i>"}#{lusers[u].nil? ? "": " (#{'%.1f' % lusers[u][:total_cpu]}% cpu)" }" }.listify + ".</p>" unless impressive.empty?
 
 # CDM Nov 2008: This script runs on juice as users pdm. This bit needs juicy mounted
 # if ! impressive.empty?
