@@ -291,7 +291,7 @@ if ! culprits.empty?
     if m.nontrivial_lusers.empty?
       "even though no one is really using the CPU - weird"
     else
-      "for which we might blame " + m.nontrivial_lusers.map { |name, u| "#{name} (#{u[:cpu]}% cpu)" }.listify(" or ")
+      "for which we might blame " + m.nontrivial_lusers.map { |name, u| "<b>#{name}</b> (#{u[:cpu]}% cpu)" }.listify(" or ")
     end
   end
   # fsload += " Load comes from " + culpritsdesc.listify(", and ") + "."
