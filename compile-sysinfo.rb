@@ -18,9 +18,8 @@ NOTE_MAX_AGE = 5 * 24 * 3600 # (seconds) ignore files older than this
 
 ## known lusers. even if these guys aren't running anything we will
 ## poll their claims.  this list needs updated when new people come.
-LUSERS = %w(jrfinkel grenager wtm manning pichuan dramage htseng
-            jbrenier jmichels jurafsky rlsnow natec mgalley
-            surabhig yhsung wcmac anenkova varung cerd mcdm acvogel)
+LUSERS = %w(jrfinkel grenager wtm manning jurafsky natec mgalley cerd mcdm acvogel
+	    hyhieu meric pengqi sbowman cases lmthang bdlijiwei vzhong codalab wmonroe4)
 
 ## total cpu percentage usage threshold for whether a luser is
 ## "impressive" or not. 500 means 5 cpus.
