@@ -318,16 +318,17 @@ puts "<p><b>Documentation:</b> <a href=\"machine-info.shtml\">NLP computer help 
 
 puts "<h2>Machines</h2>"
 
-info.sort_by do |name, m|
-  [m.server? ? 1 : 0,
-   m.down? ? 1 : 0,
-   claims.member?(name) ? 1 : 0,
-   m.free? ? 0 : 1,
-   m.freeish? ? 0 : 1,
-   m.cpunum,
-   m.cpu,
-   -m.memfree]
-end.each do |name, m|
+#info.sort_by do |name, m|
+  #[m.server? ? 1 : 0,
+  # m.down? ? 1 : 0,
+  # claims.member?(name) ? 1 : 0,
+  # m.free? ? 0 : 1,
+  # m.freeish? ? 0 : 1,
+  # m.cpunum,
+  # m.cpu,
+  # -m.memfree]
+
+info.each do |name, m|
   puts "<h3>#{name.to_anchor}#{m.server? ? " (fileserver)" : ""}</h3>"
   claims[name].each do |u, t|
     puts "<p><font color='red'>#{u}: #{t}</font></p>"
