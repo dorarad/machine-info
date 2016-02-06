@@ -9,9 +9,9 @@ require 'timeout'
 YAML_DIR = "/u/nlp/machine-info"
 
 ## for user "claims" and notes
-USER_DIR = "/user"
+USER_DIR = "/scr"
 NOTE_FN = ".javanlp-note"
-CLAIM_FN = ".javanlp-claims"
+CLAIM_FN = ".nlp-machine-claims"
 SYSTEM_DIR = "/u/nlp/machine-info"
 CLAIM_TOO_FN = "claims.txt"
 NOTE_MAX_AGE = 5 * 24 * 3600 # (seconds) ignore files older than this
@@ -19,7 +19,7 @@ NOTE_MAX_AGE = 5 * 24 * 3600 # (seconds) ignore files older than this
 ## known lusers. even if these guys aren't running anything we will
 ## poll their claims.  this list needs updated when new people come.
 LUSERS = %w(jrfinkel grenager wtm manning jurafsky natec mgalley cerd mcdm acvogel
-	    hyhieu meric pengqi sbowman cases lmthang bdlijiwei vzhong codalab wmonroe4)
+	    hyhieu meric pengqi sbowman cases lmthang bdlijiwei vzhong codalab wmonroe4 jebolton kevclark danqi)
 
 ## total cpu percentage usage threshold for whether a luser is
 ## "impressive" or not. 500 means 5 cpus.
@@ -71,11 +71,17 @@ if File.exists?(claim_too_fn)
 end
 
 claims = {}
+gpu_claims = {}
 lusers.each do |u, h|
   next unless h[:claims]
   h[:claims].each do |m, t|
-    claims[m] ||= []
-    claims[m] << [u, t]
+    if t =~ /gpu[0-9]+/
+      gpu_claims[m] ||= []
+      gpu_claims[m] << [u, t]
+    else
+      claims[m] ||= []
+      claims[m] << [u, t]
+    end
   end
 end
 
@@ -96,6 +102,7 @@ puts({
   :free => free,
   :freeish => freeish,
   :claims => claims,
+  :gpu_claims => gpu_claims,
   :lusers => lusers,
   :servers => servers,
   :info => machines.map { |m| [m.name, m] }.to_h,

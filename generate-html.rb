@@ -33,7 +33,7 @@ EOS
     end
   end
 
-  def statustab_html
+  def statustab_html gpu_claim_list
     ret = <<EOS
 <table cellpadding="2" cellspacing="0" bgcolor="#cccccc">
 <tr><td align="right">load:</td> <td align="left">#{load1} #{load5} #{load15}</td>
@@ -56,6 +56,7 @@ EOS
     #{gpu[:utilization].to_bar 100, PROGRESS_CELLS, 'red'}</tr>
 <tr><td align="right">gpu#{i} mem:</td> <td align="left">#{gpu[:memused]} MiB (#{gpu[:memused].to_pct gpu[:memtot]}) used</td>
     #{gpu[:memused].to_bar gpu[:memtot], PROGRESS_CELLS, 'blue'}</tr>
+<tr><td align="right">gpu#{i} claim:</td> <td align="left">#{gpu_claim_list[i]}</td></tr>
 EOS
       }
 
@@ -104,7 +105,7 @@ EOS
       all_mem = selected.map { |what, cpu, mem, extra| mem.to_s }
       # TODO full_cmd really isn't presented well currently -- need to split each command into a separate row
       # TODO also, full_cmd is really not the full command (args get lost in sysinfo.rb)
-      full_cmd_div = selected.map { |what, cpu, mem, extra| "<div title=\"#{extra[:full_cmd]}\"><font size='-2'>#{what}</font></div>" }
+      full_cmd_div = selected.map { |what, cpu, mem, extra| "<div title=\"#{extra[:full_cmd]}\">#{what}</div>" }
       full_cmd = selected.map { |what, cpu, mem, extra| extra[:full_cmd] }
       pbs_job_ids = selected.map { |what, cpu, mem, extra| extra[:pbs_job_id] }
       pbs_job_names = selected.map { |what, cpu, mem, extra| extra[:pbs_job_name] }
@@ -121,7 +122,7 @@ EOS
 <td align='right'>#{time * '<br>'}</td>
 <td align='left'>#{full_cmd_div * ''}</td>
 <td align='left'>#{pbs_job_ids * '<br>'}</td>
-<td align='left'><font size='-2'>#{pbs_job_names * '<br>'}</font></td>
+<td align='left'>#{pbs_job_names * '<br>'}</td>
 <td align='left'>#{pbs_queues * '<br>'}</td>
 <td align='left'>#{pbs_priority * '<br>'}</td>
 <td align='left'> <font color='#555555'>#{luser_info.nil? ? "": luser_info[name].nil? ? "" : luser_info[name][:note]}</font></td>
@@ -218,7 +219,7 @@ end
 ## start here
 h = YAML.load STDIN.read
 
-impressive, down, busy, overloaded, free, freeish, claims, lusers, servers, info = h[:impressive], h[:down], h[:busy], h[:overloaded], h[:free], h[:freeish], h[:claims], h[:lusers], h[:servers], h[:info]
+impressive, down, busy, overloaded, free, freeish, claims, gpu_claims, lusers, servers, info = h[:impressive], h[:down], h[:busy], h[:overloaded], h[:free], h[:freeish], h[:claims], h[:gpu_claims], h[:lusers], h[:servers], h[:info]
 
 puts <<EOS
 <!--#include virtual="/header.html" -->
@@ -336,10 +337,21 @@ info.each do |name, m|
   if m.down?
     puts "<p><font color='red'>Down? Last update #{m.date}</font></p>"
   end
+  gpu_claims_list = {}
+  gpu_claims_list.default = "free"
+  if gpu_claims[name]
+    gpu_claims[name].each do |u, t|
+      gpus_claimed = t.split(",")
+      gpus_claimed.each do |gpu_name|
+        gpu_index = gpu_name[-1, 1]
+        gpu_claims_list[gpu_index.to_i] = u
+      end
+    end
+  end
   puts <<EOS
 #{m.spectab_short_html}
 <table>
-<tr><td valign='top'>#{m.statustab_html}</td>
+<tr><td valign='top'>#{m.statustab_html(gpu_claims_list)}</td>
     <td valign='top'>#{m.server? ? m.fsystem_long_html : m.nontrivial_lusers.empty? ? "" : m.usertab_html(lusers)}</td>
 </tr>
 </table>
