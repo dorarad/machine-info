@@ -25,9 +25,6 @@ for machine_name in os.listdir(status_dir):
     #print nvidia_contents
   gpu_to_pid[machine_name] = {}
 
-gpu_info_regex  = re.compile("|    [0-9]+      [0-9]+    [A-Za-z0-9]+   python                                        1312MiB |")
-
-
 for machine_name in gpu_to_pid:
   nvidia_contents = getoutput("cat "+status_dir+"/"+machine_name+"/nvidia-smi | egrep \"MiB \\|$\"").split("\n")
   for line in nvidia_contents:
