@@ -46,7 +46,7 @@ EOS
 <tr><td align="right">swappage:</td> <td align="left">#{pswapin.nice 1} pg/s in, #{pswapout.nice 1} out</td>
     #{([pswapin + pswapout, PSWAP_S_THRESH].min).to_bar PSWAP_S_THRESH, PROGRESS_CELLS, 'cyan'}</tr>
 <tr><td align="right">nfs:</td> <td align="left">#{nfs[:total].nice} calls/s (#{nfs[:getattr].nice}/#{nfs[:read].nice}/#{nfs[:write].nice}) </td>
-    #{([nfs[:total], NFS_CALLS_S_THRESH].min).to_bar NFS_CALLS_S_THRESH, PROGRESS_CELLS, 'yellow'}</tr>
+    #{([nfs[:total], NFS_CALLS_S_THRESH].min).to_bar NFS_CALLS_S_THRESH, PROGRESS_CELLS, '#FFFFA0'}</tr>
 </table>
 EOS
 
