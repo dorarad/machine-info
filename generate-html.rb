@@ -33,15 +33,16 @@ EOS
     end
   end
 
-  def statustab_html gpu_claim_list
+  def statustab_html gpu_claim_list, gpu_to_user_list
     ret = <<EOS
 <table cellpadding="2" cellspacing="0" bgcolor="#cccccc">
+<tr><td align="left" bgcolor="#800000"><font color='white'>machine info</font></td></tr>
 <tr><td align="right">load:</td> <td align="left">#{load1} #{load5} #{load15}</td>
-    #{load5.to_bar 8.0, PROGRESS_CELLS, 'red'}</tr>
+    #{load5.to_bar 8.0, PROGRESS_CELLS, '#5D8896'}</tr>
 <tr><td align="right">memory:</td> <td align="left">#{memfree}mb (#{memfree.to_pct memtot}) free</td>
-    #{memused.to_bar memtot, PROGRESS_CELLS, 'blue'}</tr>
+    #{memused.to_bar memtot, PROGRESS_CELLS, '#A3CEDC'}</tr>
 <tr><td align="right">swap:</td> <td align="left">#{swapused}mb (#{swapused.to_pct swaptot}) used</td>
-    #{swapused.to_bar swaptot, PROGRESS_CELLS, 'green'}</tr>
+    #{swapused.to_bar swaptot, PROGRESS_CELLS, '#CBF6FF'}</tr>
 <tr><td align="right">swappage:</td> <td align="left">#{pswapin.nice 1} pg/s in, #{pswapout.nice 1} out</td>
     #{([pswapin + pswapout, PSWAP_S_THRESH].min).to_bar PSWAP_S_THRESH, PROGRESS_CELLS, 'cyan'}</tr>
 <tr><td align="right">nfs:</td> <td align="left">#{nfs[:total].nice} calls/s (#{nfs[:getattr].nice}/#{nfs[:read].nice}/#{nfs[:write].nice}) </td>
@@ -52,10 +53,12 @@ EOS
     if gpus
       gpu_strs = gpus.each_with_index.map { |gpu, i|
         <<EOS
+<tr><td align="left" bgcolor="#800000"><font color='white'>gpu#{i} info</font></td></tr>
 <tr><td align="right">gpu#{i} util:</td> <td align="left">#{gpu[:utilization]}%</td>
-    #{gpu[:utilization].to_bar 100, PROGRESS_CELLS, 'red'}</tr>
+    #{gpu[:utilization].to_bar 100, PROGRESS_CELLS, '#5D8896'}</tr>
 <tr><td align="right">gpu#{i} mem:</td> <td align="left">#{gpu[:memused]} MiB (#{gpu[:memused].to_pct gpu[:memtot]}) used</td>
-    #{gpu[:memused].to_bar gpu[:memtot], PROGRESS_CELLS, 'blue'}</tr>
+    #{gpu[:memused].to_bar gpu[:memtot], PROGRESS_CELLS, '#A3CEDC'}</tr>
+<tr><td align="right">gpu#{i} users:</td> <td align="left">#{gpu_to_user_list[i]}</td></tr>
 <tr><td align="right">gpu#{i} claim:</td> <td align="left">#{gpu_claim_list[i]}</td></tr>
 EOS
       }
@@ -219,7 +222,7 @@ end
 ## start here
 h = YAML.load STDIN.read
 
-impressive, down, busy, overloaded, free, freeish, claims, gpu_claims, lusers, servers, info = h[:impressive], h[:down], h[:busy], h[:overloaded], h[:free], h[:freeish], h[:claims], h[:gpu_claims], h[:lusers], h[:servers], h[:info]
+impressive, down, busy, overloaded, free, freeish, claims, gpu_claims, lusers, servers, info, gpu_to_user = h[:impressive], h[:down], h[:busy], h[:overloaded], h[:free], h[:freeish], h[:claims], h[:gpu_claims], h[:lusers], h[:servers], h[:info], h[:gpu_to_user]
 
 puts <<EOS
 <!--#include virtual="/header.html" -->
@@ -339,6 +342,8 @@ info.each do |name, m|
   end
   gpu_claims_list = {}
   gpu_claims_list.default = "free"
+  gpu_users_list = {}
+  gpu_users_list.default = "none"
   if gpu_claims[name]
     gpu_claims[name].each do |u, t|
       gpus_claimed = t.split(",")
@@ -348,10 +353,15 @@ info.each do |name, m|
       end
     end
   end
+  if gpu_to_user[name]
+    gpu_to_user[name].each do |gpu_index,user_list|
+      gpu_users_list[gpu_index.to_i] = user_list
+    end
+  end
   puts <<EOS
 #{m.spectab_short_html}
 <table>
-<tr><td valign='top'>#{m.statustab_html(gpu_claims_list)}</td>
+<tr><td valign='top'>#{m.statustab_html(gpu_claims_list, gpu_users_list)}</td>
     <td valign='top'>#{m.server? ? m.fsystem_long_html : m.nontrivial_lusers.empty? ? "" : m.usertab_html(lusers)}</td>
 </tr>
 </table>
