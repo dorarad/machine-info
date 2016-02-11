@@ -322,6 +322,19 @@ puts "<p><b>Documentation:</b> <a href=\"machine-info.shtml\">NLP computer help 
 
 puts "<h2>Machines</h2>"
 
+#puts "<br>"
+#puts "<div class='dropdown'>"
+#puts "  <button style='background-color:#800000' class='btn btn-primary dropdown-toggle' type='button' data-toggle='dropdown'>Filter Machines by"
+#puts "  <span class='caret'></span></button>"
+#puts "  <ul class='dropdown-menu'>"
+#puts "    <li><a href='#'>all</a></li>"
+#puts "    <li><a href='#'>free</a></li>"
+#puts "    <li><a href='#'>spare</a></li>"
+#puts "    <li><a href='#'>gpu</a></li>"
+#puts  "   </ul>"
+#puts " </div>"
+#puts "<br>"
+
 #info.sort_by do |name, m|
   #[m.server? ? 1 : 0,
   # m.down? ? 1 : 0,
