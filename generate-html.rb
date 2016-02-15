@@ -36,7 +36,7 @@ EOS
   def statustab_html gpu_claim_list, gpu_to_user_list
     ret = <<EOS
 <table cellpadding="2" cellspacing="0" bgcolor="#cccccc">
-<tr><td align="left" bgcolor="#800000"><font color='white'>machine info</font></td></tr>
+<tr><td align="left" bgcolor="#941414"><font color='white'>machine info</font></td></tr>
 <tr><td align="right">load:</td> <td align="left">#{load1} #{load5} #{load15}</td>
     #{load5.to_bar 8.0, PROGRESS_CELLS, '#5D8896'}</tr>
 <tr><td align="right">memory:</td> <td align="left">#{memfree}mb (#{memfree.to_pct memtot}) free</td>
@@ -53,7 +53,7 @@ EOS
     if gpus
       gpu_strs = gpus.each_with_index.map { |gpu, i|
         <<EOS
-<tr><td align="left" bgcolor="#800000"><font color='white'>gpu#{i} info</font></td></tr>
+<tr><td align="left" bgcolor="#941414"><font color='white'>gpu#{i} info</font></td></tr>
 <tr><td align="right">gpu#{i} util:</td> <td align="left">#{gpu[:utilization]}%</td>
     #{gpu[:utilization].to_bar 100, PROGRESS_CELLS, '#5D8896'}</tr>
 <tr><td align="right">gpu#{i} mem:</td> <td align="left">#{gpu[:memused]} MiB (#{gpu[:memused].to_pct gpu[:memtot]}) used</td>
