@@ -320,7 +320,7 @@ puts "<p><b>Impressive:</b> " + impressive.map { |u| "#{u} #{lusers[u].nil? ? ""
 puts "<p><b>Documentation:</b> <a href=\"machine-info.shtml\">NLP computer help &amp; rules</a> &middot; <a href=\"machine-info.shtml\#machinespage\">machines page</a>.</p>"
 # <a href=\"https://cs.stanford.edu/wiki/nlp-cluster/\">PBS (jude* machines)</a> &middot;
 
-puts "<p><b>For info on codalab users go to this link:</b> https://codalab.stanford.edu/worksheets/0x8ea918daaabc4a4e92c080a91da6552d/<p>"
+puts "<p><b>For info on CodaLab users go</b> <a href=\"https://codalab.stanford.edu/worksheets/0x8ea918daaabc4a4e92c080a91da6552d/\">here</a></p>"
 
 puts "<h2>Machines</h2>"
 
