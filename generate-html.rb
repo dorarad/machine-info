@@ -33,7 +33,7 @@ EOS
     end
   end
 
-  def statustab_html
+  def statustab_html gpu_claim_list, gpu_to_user_list
     ret = <<EOS
 <table cellpadding="2" cellspacing="0" bgcolor="#cccccc">
 <tr><td align="left" bgcolor="#941414"><font color='white'><b>machine info</b></font></td></tr>
@@ -61,7 +61,6 @@ def gpu_usage_tab gpu_claim_list, gpu_to_user_list
 
       gpu_strs = gpus.each_with_index.map { |gpu, i|
         <<EOS
-
           <tr>
             <td align="left">gpu#{i}: </td>
             <td align="right">util:</td> <td align="left">#{gpu[:utilization]}%</td>
@@ -73,6 +72,15 @@ def gpu_usage_tab gpu_claim_list, gpu_to_user_list
             <td align="right">&nbsp&nbspname:</td> <td align="left">#{gpu[:name]}, #{gpu[:perf]}</td>
           </tr>
 EOS
+#<<EOS
+#<tr><td align="left" bgcolor="#941414"><font color='white'><b>gpu#{i} info</b></font></td></tr>
+#<tr><td align="right">gpu#{i} util:</td> <td align="left">#{gpu[:utilization]}%</td>
+#    #{gpu[:utilization].to_bar 100, PROGRESS_CELLS, '#5D8896'}</tr>
+#<tr><td align="right">gpu#{i} mem:</td> <td align="left">#{gpu[:memused]} MiB (#{gpu[:memused].to_pct gpu[:memtot]}) used</td>
+#    #{gpu[:memused].to_bar gpu[:memtot], PROGRESS_CELLS, '#A3CEDC'}</tr>
+#<tr><td align="right">gpu#{i} users:</td> <td align="left">#{gpu_to_user_list[i]}</td></tr>
+#<tr><td align="right">gpu#{i} claim:</td> <td align="left">#{gpu_claim_list[i]}</td></tr>
+#EOS
       }
       
       ret = 
@@ -405,7 +413,7 @@ info.each do |name, m|
   puts <<EOS
 #{m.spectab_short_html}
 <table>
-<tr><td valign='top'>#{m.statustab_html()}</td>
+<tr><td valign='top'>#{m.statustab_html(gpu_claims_list, gpu_users_list)}</td>
     <td valign='top'>#{m.server? ? m.fsystem_long_html : m.nontrivial_lusers.empty? ? "" : m.usertab_html(lusers)}</td>
 </tr>
 #{m.gpu_usage_tab(gpu_claims_list, gpu_users_list)}

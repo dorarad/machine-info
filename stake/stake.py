@@ -155,7 +155,7 @@ def read_update_stake_info():
 
     # Update GPU info
     stake_info['gpu_info'] = get_gpu_info()
-    
+
     # Delete claims which are no longer there
     stake_info['claims'] = [claim for claim in stake_info.get('claims', []) if claim_exists(claim)]
 
@@ -190,7 +190,7 @@ def join_process_claims(stake_info, gpu_num):
                 claimed_processes.append(process)
                 break
         result.append(info)
-            
+
     for process in processes:
         if processes in claimed_processes:
             continue
@@ -287,7 +287,7 @@ def run_command(claim_id, stake_info):
         if args.stats_file:
             with open(args.stats_file, 'w') as f:
                 print >>f, json.dumps(stats)
-    
+
     #while p.returncode is None:
     first = True
     while p.poll() is None:
@@ -316,7 +316,7 @@ def run_command(claim_id, stake_info):
                 log('GPU memory usage %s exceeded claim %s, killing process %d and %d' % (size_str(process['gpu_mem']), size_str(claim['gpu_mem']), p.pid, process['pid']))
                 os.kill(process['pid'], signal.SIGTERM)
                 #p.terminate()
-        
+
         output_stats()
 
     log('Process %d finished (exitcode %d, time %ds, max_gpu_mem %s)' % (p.pid, p.returncode, time.time() - start_time, size_str(max_gpu_mem)))
