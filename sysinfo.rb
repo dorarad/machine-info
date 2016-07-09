@@ -203,10 +203,11 @@ chips = f["cpuinfo"].lines.grep(/physical id\s*:\s*\d/).uniq.length
 # Prepare basic high-level GPU information
 gpus = []
 if not f["nvidia-smi"].nil?
-  gpus = f["nvidia-smi"].scan(/(\d+)MiB \/ (\d+)MiB[ |]*(\d+)%/).map { |data|
-    %i(memused memtot utilization).zip(data.map(&:to_i)).to_h
+  gpus = f["nvidia-smi"].scan(/[ \|]+\d+  ([A-Za-z0-9]+) ([A-Za-z0-9]+).+\|.+\|.+\|\n.*(\d+)MiB \/ (\d+)MiB[ |]*(\d+)%/).map { |data|
+    %i(name perf memused memtot utilization).zip(data).to_h
   }
 end
+
 
 status = {
   :memtot => f["meminfo"].nil? ? 0: f["meminfo"].value_of(/MemTotal:\s+(\d+) kB/).to_i / 1024,

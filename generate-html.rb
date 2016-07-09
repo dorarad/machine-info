@@ -65,11 +65,12 @@ def gpu_usage_tab gpu_claim_list, gpu_to_user_list
           <tr>
             <td align="left">gpu#{i}: </td>
             <td align="right">util:</td> <td align="left">#{gpu[:utilization]}%</td>
-              #{gpu[:utilization].to_bar 100, PROGRESS_CELLS, '#5D8896'}
-            <td align="right">mem:</td> <td align="left">#{gpu[:memused]} MiB (#{gpu[:memused].to_pct gpu[:memtot]}) used</td>
-              #{gpu[:memused].to_bar gpu[:memtot], PROGRESS_CELLS, '#A3CEDC'}
+              #{gpu[:utilization].to_i.to_bar 100, PROGRESS_CELLS, '#5D8896'}
+            <td align="right">mem:</td> <td align="left">#{gpu[:memused]} MiB (#{gpu[:memused].to_i.to_pct gpu[:memtot]}) used</td>
+              #{gpu[:memused].to_i.to_bar gpu[:memtot], PROGRESS_CELLS, '#A3CEDC'}
             <td align="right">users:</td> <td align="left">#{gpu_to_user_list[i]}</td>
-            <td align="right">&nbsp&nbsp&nbspclaim:</td> <td align="left">#{gpu_claim_list[i]}&nbsp</td>
+            <td align="right">&nbsp&nbsp&nbspclaim:</td> <td align="left">#{gpu_claim_list[i]}</td>
+            <td align="right">&nbsp&nbspname:</td> <td align="left">#{gpu[:name]}, #{gpu[:perf]}</td>
           </tr>
 EOS
       }
