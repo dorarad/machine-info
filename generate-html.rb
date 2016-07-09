@@ -246,7 +246,7 @@ end
 ## start here
 h = YAML.load STDIN.read
 
-impressive, down, busy, overloaded, free, freeish, claims, gpu_claims, lusers, servers, info, gpu_to_user = h[:impressive], h[:down], h[:busy], h[:overloaded], h[:free], h[:freeish], h[:claims], h[:gpu_claims], h[:lusers], h[:servers], h[:info], h[:gpu_to_user]
+impressive, down, busy, overloaded, free, freeish, claims, gpu_claims, lusers, servers, info, gpu_to_user, codalab_to_user = h[:impressive], h[:down], h[:busy], h[:overloaded], h[:free], h[:freeish], h[:claims], h[:gpu_claims], h[:lusers], h[:servers], h[:info], h[:gpu_to_user], h[:codalab_to_user]
 
 puts <<EOS
 <!--#include virtual="/header.html" -->
@@ -346,6 +346,10 @@ puts "<p><b>Documentation:</b> <a href=\"machine-info.shtml\">NLP computer help 
 
 puts "<p><b>For info on CodaLab users go</b> <a href=\"https://codalab.stanford.edu/worksheets/0x8ea918daaabc4a4e92c080a91da6552d/\">here</a></p>"
 
+if !codalab_to_user[:success]
+  puts "<b style=\"color: red;\">Warning: CodaLab scraping code failed! Please contact Ice.</b>"
+end
+
 puts "<h2>Machines</h2>"
 
 #puts "<br>"
@@ -406,6 +410,15 @@ info.each do |name, m|
 #{m.gpu_usage_tab(gpu_claims_list, gpu_users_list)}
 </table>
 EOS
+  if codalab_to_user[name]
+    puts '<b>CodaLab users:</b>'
+    puts '<ul>'
+    codalab_to_user[name].each do |user, uuids|
+      uuids.map! { |x| "<a target=_blank href=https://codalab.stanford.edu/bundles/#{x[0]}/>#{x[0][0,8]}</a> (#{x[1].gsub('failed', 'zombie')})" }
+      puts "<li><b>#{user}</b>: #{uuids.join(', ')}</li>"
+    end
+    puts '</ul>'
+  end
 end
 
 if ! culprits.empty?

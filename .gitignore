@@ -6,3 +6,6 @@ attic
 
 # Old error output from cron
 old-cron-output
+
+*~
+*.swp
