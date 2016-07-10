@@ -305,7 +305,7 @@ jobs.each do |l|
         end
       end
       if name.length > 300 || origname == name
-        origname + " {with such an obscenely long classpath that the class name was lost}"
+        origname + " {with an obscenely long classpath so the class name was lost}"
       else
         name.gsub(/^edu\.stanford\.nlp\./, "")
       end
