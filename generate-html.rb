@@ -62,14 +62,13 @@ def gpu_usage_tab gpu_claim_list, gpu_to_user_list
       gpu_strs = gpus.each_with_index.map { |gpu, i|
         <<EOS
           <tr>
-            <td align="left">gpu#{i}: </td>
+            <td align="left">gpu#{i}: #{gpu[:name]} #{gpu[:perf]}</td>
             <td align="right">util:</td> <td align="left">#{gpu[:utilization]}%</td>
               #{gpu[:utilization].to_i.to_bar 100, PROGRESS_CELLS, '#5D8896'}
             <td align="right">mem:</td> <td align="left">#{gpu[:memused]} MiB (#{gpu[:memused].to_i.to_pct gpu[:memtot]}) used</td>
               #{gpu[:memused].to_i.to_bar gpu[:memtot], PROGRESS_CELLS, '#A3CEDC'}
             <td align="right">users:</td> <td align="left">#{gpu_to_user_list[i]}</td>
             <td align="right">&nbsp&nbsp&nbspclaim:</td> <td align="left">#{gpu_claim_list[i]}</td>
-            <td align="right">&nbsp&nbspname:</td> <td align="left">#{gpu[:name]}, #{gpu[:perf]}</td>
           </tr>
 EOS
 #<<EOS
@@ -255,7 +254,7 @@ end
 ## start here
 h = YAML.load STDIN.read
 
-impressive, down, busy, overloaded, free, freeish, claims, gpu_claims, lusers, servers, info, gpu_to_user, codalab_to_user = h[:impressive], h[:down], h[:busy], h[:overloaded], h[:free], h[:freeish], h[:claims], h[:gpu_claims], h[:lusers], h[:servers], h[:info], h[:gpu_to_user], h[:codalab_to_user]
+impressive, down, busy, overloaded, free, freeish, claims, gpu_claims, lusers, servers, info, gpu_to_user, codalab_to_user = h[:impressive], h[:down], h[:busy], h[:overloaded], h[:free], h[:freeish], h[:claims], h[:gpu_claims], h[:lusers], h[:servers], h[:info], h[:gpu_to_user], (h[:codalab_to_user] || {})
 
 puts <<EOS
 <!--#include virtual="/header.html" -->
@@ -356,7 +355,7 @@ puts "<p><b>Documentation:</b> <a href=\"machine-info.shtml\">NLP computer help 
 puts "<p><b>For info on CodaLab users go</b> <a href=\"https://codalab.stanford.edu/worksheets/0x8ea918daaabc4a4e92c080a91da6552d/\">here</a></p>"
 
 if !codalab_to_user[:success]
-  puts "<b style=\"color: red;\">Warning: CodaLab scraping code failed! Please contact Ice.</b>"
+  #puts "<p><b style=\"color: red;\">Warning: CodaLab scraping code failed! Please contact Ice.</b></p>"
 end
 
 puts "<h2>Machines</h2>"
