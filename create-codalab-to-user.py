@@ -49,7 +49,7 @@ def map_uuid_to_user(possible_uuids):
     #print possible_uuids
     #process = subprocess.Popen([CL, 'help'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
     #print >> sys.stderr, process.communicate('\n\n')
-    _ = subprocess.check_output([CL, 'work', 'http://codalab.stanford.edu:2800::'])
+    #_ = subprocess.check_output([CL, 'work', 'http://codalab.stanford.edu:2800::'])
     uuids = subprocess.check_output([CL, 'search', '-u',
         '.limit=9000', 'uuid=' + ','.join(possible_uuids)]).strip().split()
     if not uuids:

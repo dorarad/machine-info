@@ -177,7 +177,7 @@ def join_process_claims(stake_info, gpu_num):
     by joining on the PID.
     '''
     claims = [claim for claim in stake_info.get('claims', []) if claim['gpu_num'] == gpu_num]
-    processes = stake_info['gpu_info'][gpu_num]['processes']
+    processes = stake_info['gpu_info'][gpu_num].get('processes', [])
     result = []
     claimed_processes = []
     for claim in claims:
@@ -303,7 +303,7 @@ def run_command(claim_id, stake_info):
         gpu_mem = None
 
         # Associate process with claim
-        processes = stake_info['gpu_info'][claim['gpu_num']]['processes']
+        processes = stake_info['gpu_info'][claim['gpu_num']].get('processes', [])
         process = None
         for proc in processes:
             if is_pid_under(p.pid, proc['pid']):
