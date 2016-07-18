@@ -62,7 +62,7 @@ def gpu_usage_tab gpu_claim_list, gpu_to_user_list
       gpu_strs = gpus.each_with_index.map { |gpu, i|
         <<EOS
           <tr>
-            <td align="left">gpu#{i}: #{gpu[:name]} #{gpu[:perf]}</td>
+            <td align="left">gpu#{i}: #{gpu[:name]}</td>
             <td align="right">util:</td> <td align="left">#{gpu[:utilization]}%</td>
               #{gpu[:utilization].to_i.to_bar 100, PROGRESS_CELLS, '#5D8896'}
             <td align="right">mem:</td> <td align="left">#{gpu[:memused]} MiB (#{gpu[:memused].to_i.to_pct gpu[:memtot]}) used</td>
@@ -71,15 +71,6 @@ def gpu_usage_tab gpu_claim_list, gpu_to_user_list
             <td align="right">&nbsp&nbsp&nbspclaim:</td> <td align="left">#{gpu_claim_list[i]}</td>
           </tr>
 EOS
-#<<EOS
-#<tr><td align="left" bgcolor="#941414"><font color='white'><b>gpu#{i} info</b></font></td></tr>
-#<tr><td align="right">gpu#{i} util:</td> <td align="left">#{gpu[:utilization]}%</td>
-#    #{gpu[:utilization].to_bar 100, PROGRESS_CELLS, '#5D8896'}</tr>
-#<tr><td align="right">gpu#{i} mem:</td> <td align="left">#{gpu[:memused]} MiB (#{gpu[:memused].to_pct gpu[:memtot]}) used</td>
-#    #{gpu[:memused].to_bar gpu[:memtot], PROGRESS_CELLS, '#A3CEDC'}</tr>
-#<tr><td align="right">gpu#{i} users:</td> <td align="left">#{gpu_to_user_list[i]}</td></tr>
-#<tr><td align="right">gpu#{i} claim:</td> <td align="left">#{gpu_claim_list[i]}</td></tr>
-#EOS
       }
       
       ret = 

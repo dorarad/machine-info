@@ -151,13 +151,21 @@ f = (FILES + (server ? SERVER_FILES : CLIENT_FILES)).map do |fn|
   [fn, data]
 end.to_h
 
-# Read the nvidia-smi file separately; this doesn't exist on some systems which
+# Read the nvidia-smi-a file separately; this doesn't exist on some systems which
 # didn't get the record-system-status update..
+
 begin
-  f["nvidia-smi"] = File.readlines(File.join(dir, "nvidia-smi")).join
+  f["nvidia-smi-a"] = File.readlines(File.join(dir, "nvidia-smi-a")).join
 rescue
-  f["nvidia-smi"] = nil
+  f["nvidia-smi-a"] = nil
 end
+
+# NO LONGER IN USE: read the nvidia-smi file
+# begin
+#   f["nvidia-smi"] = File.readlines(File.join(dir, "nvidia-smi")).join
+# rescue
+#   f["nvidia-smi"] = nil
+# end
 
 f["loadavg"] =~ /^(\S+) (\S+) (\S+)/
 load1 = $1.to_f
@@ -200,14 +208,22 @@ memcached = f["meminfo"].nil? ? 0: f["meminfo"].value_of(/Cached:\s+(\d+) kB/).t
 coresperchip = f["cpuinfo"].lines.grep(/core id\s*:\s*\d/).uniq.length
 chips = f["cpuinfo"].lines.grep(/physical id\s*:\s*\d/).uniq.length
 
+
 # Prepare basic high-level GPU information
 gpus = []
-if not f["nvidia-smi"].nil?
-  gpus = f["nvidia-smi"].scan(/[ \|]+\d+  ([A-Za-z0-9]+) ([A-Za-z0-9]+).+\|.+\|.+\|\n.*(\d+)MiB \/ (\d+)MiB[ |]*(\d+)%/).map { |data|
-    %i(name perf memused memtot utilization).zip(data).to_h
-  }
+if not f["nvidia-smi-a"].nil?
+   gpus = f["nvidia-smi-a"].scan(/Product Name[ :]*([A-Za-z0-9 ]+).*?FB Memory Usage[ \n]+Total[ :]+(\d+) MiB[\n ]+Used[ :]+(\d+) MiB.*?Utilization[ \n]+Gpu[ :]+(\d+) \%/m).map { |data|
+     %i(name memtot memused utilization).zip(data).to_h
+   }
 end
 
+# NO LONGER IN USE: reading the nvidia-smi file
+# gpus = []
+# if not f["nvidia-smi"].nil?
+#   gpus = f["nvidia-smi"].scan(/[ \|]+\d+  ([A-Za-z0-9]+) ([A-Za-z0-9]+).+\|.+\|.+\|\n.*(\d+)MiB \/ (\d+)MiB[ |]*(\d+)%/).map { |data|
+#     %i(name perf memused memtot utilization).zip(data).to_h
+#   }
+# end
 
 status = {
   :memtot => f["meminfo"].nil? ? 0: f["meminfo"].value_of(/MemTotal:\s+(\d+) kB/).to_i / 1024,
