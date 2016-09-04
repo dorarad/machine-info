@@ -213,7 +213,7 @@ chips = f["cpuinfo"].lines.grep(/physical id\s*:\s*\d/).uniq.length
 gpus = []
 if not f["nvidia-smi-a"].nil?
    gpus = f["nvidia-smi-a"].scan(/Product Name[ :]*([A-Za-z0-9 ]+).*?FB Memory Usage[ \n]+Total[ :]+(\d+) MiB[\n ]+Used[ :]+(\d+) MiB.*?Utilization[ \n]+Gpu[ :]+(\d+) \%/m).map { |data|
-     %i(name memtot memused utilization).zip(data).to_h
+     [:name, :memtot, :memused, :utilization].zip(data).to_h
    }
 end
 
