@@ -1,0 +1,113 @@
+#!/usr/bin/env ruby
+
+# == Synopsis
+#   List the nlp machines that are currently available.
+#   The machines are listed in order of the least-to-most CPU cycles being used, and then the most-to-least available memory
+#   (ie the most powerful free machine will be listed first)
+#
+# == Usage
+#   mstat [options]
+#
+# == Examples
+#   mstat   (a tab-separated list of machines, ordered by availability)
+#   mstat -lra   (the output given by prior versions of this script)
+#
+# == Options
+#   -l     detailed list of machines / users / available cycles etc.
+#   -r     list in reverse order: most-to-least current CPU cycles and least-to-most memory
+#          (ie the most powerful free machine will be listed last)
+#   -a     list all machines, even if they are claimed or special (eg jacob).
+#   -e     exclude the powerful (8 core) machines from the list (will override -a for these machines)
+#   -m mb  set the minimum amount of MB (not gb!) that the listed machines should have
+#   -h     this help
+# == Authors
+#   Rob Munro, Oct 2009 (and others prior, esp William Morgan)
+#   richard@socher.org, oct 09, added -m parameter
+
+require 'yaml'
+#require '/u/nlp/machine-info/sysinfo.rb'
+
+#1 GET MACHINE INFO / FLAGS
+STATUS_FILE = "/u/nlp/machine-info/status.yaml"
+flags = (YAML::dump(ARGV)).gsub(/[^a-z]/,'') #cheap way to get args, assuming flags only
+minMem = (YAML::dump(ARGV)).gsub(/[^0-9]/,'') #cheap way to get minimum memory!
+
+if flags.match(/m/)
+  if minMem.empty?
+    abort("You need to specify a number in megabyte if you use the -m option")
+  end
+  minMem = Integer(minMem)
+end
+
+#Print usage and exit
+if flags.match(/h/)
+  #require 'rdoc/usage'
+  #RDoc::usage()   #oops - no rdoc! - keep this code anyway in case we get this package later
+
+  File.open(__FILE__, "r") do |infile|
+    while (line = infile.gets)
+      puts line.gsub(/\# /,'') if line.match(/^\# /)
+    end
+  end
+  exit
+end
+
+require '/u/nlp/machine-info/sysinfo.rb'
+f = YAML::load_file STATUS_FILE
+f[:info] = f[:info].map { |name, sysinfo| [name, sysinfo] }.to_h
+
+
+#2 MACHINES WITH EXCEPTIONS
+special = Hash.new #machines reserved for other functions - don't list by default to err on the side of kindness
+special = {'jamie'=>true,'jacob'=>true,'nlp'=>true,'jay'=>true};
+powerful = Hash.new #the powerful machines that you should avoid unless you _really_ need them
+powerful = {'jaclyn'=>true,'jack'=>true,'jacko'=>true,'jackson'=>true,'jackknife'=>true,'jackfruit'=>true};
+claimed = Hash.new #machines that someone has claimed
+claimed = f[:claims] if f[:claims] != nil
+
+#3 GET MACHINES / SORT
+machines = f[:info].select { |name, m| !f[:servers].include? name }
+if flags.match(/r/)
+   machines = machines.sort_by { |name, m| [-m.cpu, m.memfree] }
+else
+   machines = machines.sort_by { |name, m| [m.cpu, -m.memfree] }
+end
+
+
+#4 OUTPUT
+puts sprintf("%10s %7s %8s %s", "MACHINE", "CPUUSED", "MEMFREE", "LUSERS") if flags.match(/l/)
+
+machines.each do | name, m|
+  next if (special.member?(name) || claimed.member?(name)) && !flags.match(/a/)
+  next if (powerful.member?(name) && flags.match(/e/))
+
+  users = m.nontrivial_lusers
+  userlist = users.sort_by { |u, hash| -hash[:cpu] }.map do |u, hash|
+    cmds = hash[:cmd].select { |cmd, cpu, mem| cpu > 2.0 || mem > 5.0 }.sort_by { |cmd, cpu, mem| [-cpu, mem] }
+    "#{u}: " + cmds.map { |cmd, cpu, mem| "#{cmd} (#{cpu}/#{mem})" }.join(", ") unless cmds.empty?
+  end.compact
+
+  if flags.match(/m/) && m.memtot<minMem
+  # don't print that machine, it does not have the specified minimum memory
+  else
+  if flags.match(/l/) #verbose
+    puts sprintf("%10s %7.2f %7dM %s\n", name, m.cpu, m.memfree, userlist.shift)
+    userlist.each { |l| puts((" " * 28) + l) } unless userlist.empty?
+
+     if claimed.member?(name)
+       puts (" " * 28) + "(claimed)"
+     end
+
+   else
+     if claimed.member?(name) || special.member?(name)
+       print "*"+name+"*\t"
+     else
+       print name+"\t"
+     end
+   end
+  end
+
+end
+
+print "(#{(Time.now - File.mtime(STATUS_FILE)).to_i.to_timestr} old)" if flags.match(/l/)
+print "\n"
