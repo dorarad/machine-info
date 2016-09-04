@@ -60,7 +60,7 @@ for machine_name in gpu_to_pid:
   for gpu in gpu_to_pid[machine_name]:
     gpu_to_user[machine_name][gpu] = []
     for pid in gpu_to_pid[machine_name][gpu]:
-      gpu_to_user[machine_name][gpu].append(pid_to_user[machine_name][pid])
+      gpu_to_user[machine_name][gpu].append(pid_to_user[machine_name].get(pid,"unknown"))
 
 for machine_name in gpu_to_user:
   for gpu in gpu_to_user[machine_name]:
