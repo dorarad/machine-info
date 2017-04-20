@@ -345,7 +345,7 @@ jobs.each do |l|
         end
       end
       name.gsub(/^edu\.stanford\.nlp\./, "")
-    when /(perl|ruby|python)$/
+    when /(perl|ruby|python[23]?)$/
       name = cmd
       ## look for the first thing that doesn't start with a - and
       ## isn't proceeded by a -I
