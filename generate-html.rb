@@ -247,6 +247,19 @@ h = YAML.load STDIN.read
 
 impressive, down, busy, overloaded, free, freeish, claims, gpu_claims, lusers, servers, info, gpu_to_user, codalab_to_user = h[:impressive], h[:down], h[:busy], h[:overloaded], h[:free], h[:freeish], h[:claims], h[:gpu_claims], h[:lusers], h[:servers], h[:info], h[:gpu_to_user], (h[:codalab_to_user] || {})
 
+gpu_users_flat = []
+for user_str in gpu_to_user.values().flatten()
+    if not user_str.is_a?(String)
+        next
+    end
+    for user in user_str.split(",")
+        gpu_users_flat.push user
+    end
+end
+gpu_user_counts = gpu_users_flat.each_with_object(Hash.new(0)) do |name, h|
+    h[name] += 1
+end
+
 puts <<EOS
 <!--#include virtual="/header.html" -->
 
@@ -332,6 +345,8 @@ puts "</p>"
 puts "<p><b>Special machines</b> <i>(not for heavy compute!):</i> #{"jamie".to_aref} &amp; #{"jacob".to_aref} <i>(remote access);</i> #{"nlp".to_aref} <i>(webserver, tomcat);</i> #{"jerome".to_aref} <i>(Jenkins CI);</i> #{"jack".to_aref} <i>(mysql);</i> #{"jay".to_aref} <i>(tape backup).</i></p>"
 
 puts "<p><b>Impressive:</b> " + impressive.map { |u| "#{u} #{lusers[u].nil? ? "": lusers[u][:note].nil? ? "" : "<i>[#{lusers[u][:note]}]</i>"}#{lusers[u].nil? ? "": " (#{'%.1f' % lusers[u][:total_cpu]}% cpu)" }" }.listify + ".</p>" unless impressive.empty?
+
+puts "<p><b>GPU hogs:</b> " + gpu_user_counts.sort_by {|k, v| -v}.map {|u, n| "#{u}: #{n}"}.listify + ".</p>"
 
 # CDM Nov 2008: This script runs on juice as users pdm. This bit needs juicy mounted
 # if ! impressive.empty?
