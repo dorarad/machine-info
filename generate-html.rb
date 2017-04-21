@@ -346,7 +346,7 @@ puts "<p><b>Special machines</b> <i>(not for heavy compute!):</i> #{"jamie".to_a
 
 puts "<p><b>Impressive:</b> " + impressive.map { |u| "#{u} #{lusers[u].nil? ? "": lusers[u][:note].nil? ? "" : "<i>[#{lusers[u][:note]}]</i>"}#{lusers[u].nil? ? "": " (#{'%.1f' % lusers[u][:total_cpu]}% cpu)" }" }.listify + ".</p>" unless impressive.empty?
 
-puts "<p><b>GPU hogs:</b> " + gpu_user_counts.sort_by {|k, v| -v}.map {|u, n| "#{u}: #{n}"}.listify + ".</p>"
+puts "<p><b>GPUs used:</b> " + gpu_user_counts.sort_by {|k, v| -v}.map {|u, n| "#{u}: #{n}"}.listify + ".</p>"
 
 # CDM Nov 2008: This script runs on juice as users pdm. This bit needs juicy mounted
 # if ! impressive.empty?
