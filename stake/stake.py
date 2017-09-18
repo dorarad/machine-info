@@ -20,6 +20,10 @@ Usage:
 
 @author Percy Liang
 '''
+from __future__ import print_function
+from builtins import str
+from builtins import map
+from builtins import range
 
 import argparse
 import json
@@ -35,7 +39,7 @@ import signal
 import time
 
 def log(s):
-    print >>sys.stderr, '[stake %s] %s' % (time.strftime('%Y-%m-%d %H:%M:%S'), s)
+    print('[stake %s] %s' % (time.strftime('%Y-%m-%d %H:%M:%S'), s), file=sys.stderr)
 
 def parse_size(s):
     """
@@ -101,7 +105,7 @@ def get_gpu_info():
         assert s.endswith('MiB')
         return int(s[:-3]) * 1024 * 1024
 
-    lines = subprocess.check_output('nvidia-smi').split('\n')
+    lines = subprocess.check_output('nvidia-smi').decode('utf-8').split('\n')
     curr_gpu_num = None
     in_processes_section = False
     info = {}
@@ -144,7 +148,7 @@ def read_stake_info():
 
 def write_stake_info(stake_info):
     with open(stake_path, 'w') as f:
-        print >>f, json.dumps(stake_info)
+        print(json.dumps(stake_info), file=f)
 
 def claim_exists(claim):
     pid = claim.get('pid')
@@ -286,7 +290,7 @@ def run_command(claim_id, stake_info):
         }
         if args.stats_file:
             with open(args.stats_file, 'w') as f:
-                print >>f, json.dumps(stats)
+                print(json.dumps(stats), file=f)
 
     #while p.returncode is None:
     first = True
@@ -381,7 +385,7 @@ def do_info():
             table.append([gpu_num, '-', size_str(process['gpu_mem']), 'RUN %s (pid %s)' % (process['command'], process['pid'])])
 
     for row in table:
-        print '\t'.join(map(str, row))
+        print('\t'.join(map(str, row)))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

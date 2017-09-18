@@ -54,14 +54,16 @@ def map_uuid_to_user(possible_uuids):
         '.limit=9000', 'uuid=' + ','.join(possible_uuids)]).strip().split()
     if not uuids:
         return {}
-    #print uuids
+    #print >> sys.stderr, uuids
     output = subprocess.check_output([CL, 'info', '-f', 'uuid,owner,state']
             + uuids)
+    #print >> sys.stderr, output
     uuid_to_user = {}
     for line in output.strip().split('\n'):
-        uuid, user, state = line.split()
-        uuid_to_user[uuid] = [re.sub('\(\d+\)', '', user), state]
-    #print uuid_to_user
+        uuid, user, state = line.split('\t')
+        user = re.search("u?['\"]user_name['\"]: u?['\"]([^'\"]*)['\"]", user).group(1)
+        uuid_to_user[uuid] = [user, state]
+    print >> sys.stderr, uuid_to_user
     for uuid in set(possible_uuids) - set(uuids):
         uuid_to_user[uuid] = ['unknown', 'zombie']
     return uuid_to_user

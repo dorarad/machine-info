@@ -36,7 +36,7 @@ EOS
   def statustab_html gpu_claim_list, gpu_to_user_list
     ret = <<EOS
 <table cellpadding="2" cellspacing="0" bgcolor="#cccccc">
-<tr><td align="left" bgcolor="#941414"><font color='white'><b>machine info</b></font></td></tr>
+<tr><th align="left" bgcolor="#941414" colspan="2"><font color='white'><b>machine info</b></font></th></tr>
 <tr><td align="right">load:</td> <td align="left">#{load1} #{load5} #{load15}</td>
     #{load5.to_bar 8.0, PROGRESS_CELLS, '#5D8896'}</tr>
 <tr><td align="right">memory:</td> <td align="left">#{memfree}mb (#{memfree.to_pct memtot}) free</td>
@@ -61,28 +61,26 @@ def gpu_usage_tab gpu_claim_list, gpu_to_user_list
 
       gpu_strs = gpus.each_with_index.map { |gpu, i|
         <<EOS
-          <tr>
-            <td align="left">gpu#{i}: #{gpu[:name]}</td>
-            <td align="right">util:</td> <td align="left">#{gpu[:utilization]}%</td>
-              #{gpu[:utilization].to_i.to_bar 100, PROGRESS_CELLS, '#5D8896'}
-            <td align="right">mem:</td> <td align="left">#{gpu[:memused]} MiB (#{gpu[:memused].to_i.to_pct gpu[:memtot]}) used</td>
-              #{gpu[:memused].to_i.to_bar gpu[:memtot], PROGRESS_CELLS, '#A3CEDC'}
-            <td align="right">users:</td> <td align="left">#{gpu_to_user_list[i]}</td>
-            <td align="right">&nbsp&nbsp&nbspclaim:</td> <td align="left">#{gpu_claim_list[i]}</td>
-          </tr>
+<tr>
+<td align="left">gpu#{i}: #{gpu[:name]}</td>
+<td align="right">&nbsp;&nbsp;&nbsp;util:</td> <td align="left">#{gpu[:utilization]}%</td>
+#{gpu[:utilization].to_i.to_bar 100, PROGRESS_CELLS, '#5D8896'}
+<td align="right">&nbsp;&nbsp;&nbsp;mem:</td> <td align="left">#{gpu[:memused]} MiB (#{gpu[:memused].to_i.to_pct gpu[:memtot]}) used</td>
+#{gpu[:memused].to_i.to_bar gpu[:memtot], PROGRESS_CELLS, '#A3CEDC'}
+<td align="right">&nbsp;&nbsp;&nbsp;users:</td> <td align="left">#{gpu_to_user_list[i]}</td>
+<td align="right">&nbsp;&nbsp;&nbsp;claim:</td> <td align="left">#{gpu_claim_list[i]}</td>
+</tr>
 EOS
       }
-      
-      ret = 
+
+      ret =
         <<EOS
-        <tr>
-          <td colspan="2" bgcolor="#f6eeee">
-            <table>
-              <tr>
-                <th>
-                  <td align="left" bgcolor="#941414"><font color='white'><b>GPU info</b></font></td>
-                </th>
-              </tr>
+<tr>
+<td colspan="2" bgcolor="#f6eeee">
+<table>
+<tr>
+<th align="left" bgcolor="#941414" colspan="2"><font color='white'><b>GPU info</b></font></th>
+</tr>
 EOS
       ret += gpu_strs.join "\n"
       ret += "</table>"
@@ -361,7 +359,7 @@ puts "<p><b>Documentation:</b> <a href=\"machine-info.shtml\">NLP computer help 
 puts "<p><b>For info on CodaLab users go</b> <a href=\"https://codalab.stanford.edu/worksheets/0x8ea918daaabc4a4e92c080a91da6552d/\">here</a></p>"
 
 if !codalab_to_user[:success]
-  #puts "<p><b style=\"color: red;\">Warning: CodaLab scraping code failed! Please contact Ice.</b></p>"
+  puts "<p><b style=\"color: red;\">Warning: CodaLab scraping code failed! Please contact Ice.</b></p>"
 end
 
 puts "<h2>Machines</h2>"
@@ -428,7 +426,7 @@ EOS
     puts '<b>CodaLab users:</b>'
     puts '<ul>'
     codalab_to_user[name].each do |user, uuids|
-      uuids.map! { |x| "<a target=_blank href=https://codalab.stanford.edu/bundles/#{x[0]}/>#{x[0][0,8]}</a> (#{x[1].gsub('failed', 'zombie')})" }
+      uuids.map! { |x| "<a target=_blank href=https://codalab.stanford.edu/bundles/#{x[0]}/>#{x[0][0,8]}</a> (#{x[1]})" }
       puts "<li><b>#{user}</b>: #{uuids.join(', ')}</li>"
     end
     puts '</ul>'
