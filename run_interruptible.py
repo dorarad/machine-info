@@ -117,7 +117,7 @@ def runProcess(command, threshold, waitTime, slackClient):
             log("Number of free GPUs %d got below %d - killing process %d" % (freeNum, threshold, p.pid), "red")
             p.terminate()
             if slackClient != None:
-                sc.api_call(
+                slackClient.api_call(
                   "chat.postMessage",
                   channel="#myCluster",
                   text="Job got %d killed. Free GPUs: %d " % (p.pid, freeNum)
